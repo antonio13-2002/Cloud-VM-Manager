@@ -1,0 +1,95 @@
+@baseUrl = http://localhost:3001
+@username = u1@p.it
+@password = polito
+
+### 1. Ottieni le specifiche (Pubblica/Loggata)
+GET {{baseUrl}}/api/specifications
+Content-Type: application/json
+
+### 2. Ottieni risorse usate (Pubblica)
+GET {{baseUrl}}/api/resources
+Content-Type: application/json
+
+### --------------------------------------------------------------
+### AUTENTICAZIONE
+### --------------------------------------------------------------
+
+### 3. Effettua il Login (Sessione base)
+# @name login
+POST {{baseUrl}}/api/sessions
+Content-Type: application/json
+
+{
+    "username": "{{username}}",
+    "password": "{{password}}"
+}
+
+### 4. Verifica sessione corrente
+GET {{baseUrl}}/api/sessions/current
+Content-Type: application/json
+# Qui sotto diciamo di usare il cookie ricevuto dalla richiesta chiamata "login"
+Cookie: {{login.response.headers.Set-Cookie}}
+
+
+### --------------------------------------------------------------
+### OPERAZIONI SUGLI ORDINI (Richiedono Cookie)
+### --------------------------------------------------------------
+
+### 5. Prendi gli ordini dell'utente loggato
+GET {{baseUrl}}/api/orders
+Content-Type: application/json
+Cookie: {{login.response.headers.Set-Cookie}}
+
+### 6. Crea un NUOVO ordine (Valido)
+# Questo ordine rispetta i limiti (16GB RAM, 1TB Storage)
+POST {{baseUrl}}/api/orders
+Content-Type: application/json
+Cookie: {{login.response.headers.Set-Cookie}}
+
+{
+    "type_ram_id": 1,
+    "storage_tb": 1,
+    "transfer_gb": 20
+}
+
+### 7. Crea un ordine CHE FALLISCE (Troppo storage)
+# Prova a inserire 200TB (il limite è 100). Dovresti ricevere 422.
+POST {{baseUrl}}/api/orders
+Content-Type: application/json
+Cookie: {{login.response.headers.Set-Cookie}}
+
+{
+    "type_ram_id": 3,
+    "storage_tb": 200,
+    "transfer_gb": 20
+}
+
+### --------------------------------------------------------------
+### AUTENTICAZIONE TOTP (Richiesta per DELETE)
+### --------------------------------------------------------------
+
+### 8. Login TOTP (2FA)
+# NOTA: Per testare questo, devi generare un codice valido.
+# Il segreto di u1@p.it nel DB è: LXBSMDTMSP2I5XFXIYRGFVWSFI
+# Usa un sito come "totp.danhersam.com" inserendo quel segreto per avere il codice a 6 cifre.
+# Sostituisci '123456' con il codice reale generato.
+POST {{baseUrl}}/api/login-totp
+Content-Type: application/json
+Cookie: {{login.response.headers.Set-Cookie}}
+
+{
+    "code": "089145" 
+}
+
+### --------------------------------------------------------------
+### CANCELLAZIONE (Richiede Cookie + TOTP)
+### --------------------------------------------------------------
+
+### 9. Cancella un ordine (Inserisci un ID valido esistente, es. 1)
+DELETE {{baseUrl}}/api/orders/5
+Content-Type: application/json
+Cookie: {{login.response.headers.Set-Cookie}}
+
+### 10. Logout
+DELETE {{baseUrl}}/api/sessions/current
+Cookie: {{login.response.headers.Set-Cookie}}
