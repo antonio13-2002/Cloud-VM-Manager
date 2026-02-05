@@ -55,3 +55,13 @@ Full-stack web application to manage a cloud service, focusing on the creation a
 - username: u3@p.it (Gianmarco), password: emily5, secret: LXBSMDTMSP2I5XFXIYRGFVWSFI
 - username: u4@p.it (Antonio), password: bari02, secret: LXBSMDTMSP2I5XFXIYRGFVWSFI
 
+## How to activate it:
+To activate the React application:
+```bash
+cd client; npm run dev
+```
+To activate the backend server:
+```bash
+cd server; node index.js
+```
+
